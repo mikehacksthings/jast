@@ -49,13 +49,6 @@ captured screenshot.
 **Capturing Headers**
 `$ jast.py -u http://www.example.com -o /path/for/report --headers`
 
-By default, Jast will wait up to 30 seconds for a host to respond before taking
-a screenshot. To control this timeout, use the `--timeout` flag, supplying the
-number of seconds that Jast should wait before moving on.
-
-**Modifying Timeout**
-`$ jast.py -u http://www.example.com -o /path/for/report --timeout=5`
-
 Finally, you can control the image size by passing a `--size` parameter to 
 specify the size of the browser window. By default, Jast will use a window size
 of 800x600.

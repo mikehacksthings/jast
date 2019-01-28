@@ -19,7 +19,6 @@ Arguments:
   -o	Output directory.
 
 Screenshot Options:
-  -t --timeout TIMEOUT  Seconds to wait for host response [default: 30].
   -s --size SIZE  	Screenshot window size [default: 800x600].
   --headers  		Include HTTP Headers in report.
   --follow-redirects  	Follow redirects before taking screenshot.
@@ -87,12 +86,16 @@ class Host:
 	def check_host(self):
 		try:
 			urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-			request = requests.get(self._url, timeout=5.0, allow_redirects=False, verify=False)
+			request = requests.get(self._url,
+								   allow_redirects=False,
+								   verify=False)
 			self.set_status_code(request.status_code)
 
 			if (request.status_code == 302 or request.status_code == 301) and self._follow_redirects:
 				self.set_url(request.headers['Location'])
-				request = requests.get(self._url, timeout=5.0, allow_redirects=True, verify=False)
+				request = requests.get(self._url,
+									   allow_redirects=True,
+									   verify=False)
 
 			if request.raise_for_status() is None:
 				try:
@@ -210,7 +213,8 @@ class Browser:
 	def start_browser(self, width, height):
 		options = Options()
 		options.add_argument('--headless')
-		b = Firefox(executable_path='geckodriver', options=options)
+		b = Firefox(executable_path='geckodriver',
+					options=options)
 		b.set_window_size(width, height)
 		return b
 
@@ -231,7 +235,8 @@ def process_hosts(data, args):
 				image_file = image_file.replace(c, '_')
 
 			output_file = args['-o'] + "/screenshots/" + image_file + "_" + str(int(time.time())) + ".png"
-			host = Host(store_headers=args['--headers'], follow_redirects=args['--follow-redirects'])
+			host = Host(store_headers=args['--headers'],
+						follow_redirects=args['--follow-redirects'])
 			host.set_url(u)
 			host.set_ss_filename(output_file)
 			hosts.append(host)
