@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import os
+import sys
 
 class Report:
 	def __init__(self, args={}):
