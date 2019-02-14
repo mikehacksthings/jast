@@ -2,7 +2,7 @@
 # Name: JAST - Just Another Screenshot Tool
 # Description: JAST is a tool to capture web server screenshots
 #   and server information using headless Firefox/Selenium.
-# Version: 0.0.1
+# Version: 0.2.0
 # Author: Mike Lisi (mike@mikehacksthings.com)
 
 """

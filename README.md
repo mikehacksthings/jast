@@ -1,4 +1,4 @@
-JAST v 0.1.0
+JAST v 0.2.0
 ============
 Jast (Just Another Screenshot Tool) is a tool that can be used to automate the 
 process for screenshots of webhosts. Jast uses the Selenium webdriver and the
