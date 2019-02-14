@@ -47,6 +47,8 @@ class Host:
 		self._follow_redirects = follow_redirects
 		self._store_headers = store_headers
 		self._headers = {}
+		self.error = False
+		self.error_msg = ''
 
 	def set_url(self, url):
 		self._url = url
@@ -88,14 +90,16 @@ class Host:
 			urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 			request = requests.get(self._url,
 								   allow_redirects=False,
-								   verify=False)
+								   verify=False,
+								   timeout=10)
 			self.set_status_code(request.status_code)
 
 			if (request.status_code == 302 or request.status_code == 301) and self._follow_redirects:
 				self.set_url(request.headers['Location'])
 				request = requests.get(self._url,
 									   allow_redirects=True,
-									   verify=False)
+									   verify=False,
+									   timeout=10)
 
 			if request.raise_for_status() is None:
 				try:
@@ -112,7 +116,13 @@ class Host:
 				return False
 
 		except (requests.ConnectionError, requests.HTTPError) as error:
-			print("\033[0;31m[!]\033[0m Error screenshotting host: {0}. Skipping.".format(error))
+			print("\033[0;31m[!]\033[0m Error taking screenshot for host. See report for details. Skipping.")
+			host.error_msg = error
+			return False
+
+		except (urllib3.exceptions.ReadTimeoutError, requests.exceptions.ReadTimeout) as error:
+			print("\033[0;31m[!]\033[0m Timeout taking screenshot for host. See report for details. Skipping.")
+			host.error_msg = error
 			return False
 
 
@@ -172,16 +182,24 @@ class Report:
 		f.close()
 
 	def write_host(self, host):
-		host_data = "<h2>Host: <a href=\"{0}\" target=\"_blank\">{1}</a></h1>".format(host.get_url(), host.get_url())
-		host_data += "<img src=\"{0}\" /><br>".format(host.get_ss_filename())
-		f = open(self._report_dir + "/report.html", 'a')
-		f.write(host_data)
+		if host.error:
+			host_data = "<h2>Host: {0}</h2><br>\n<h5>Error taking screenshot:</h5><br>\n{1}<br>\n".format(host.get_url(), host.error_msg)
+			f = open(self._report_dir + "/report.html", 'a')
+			f.write(host_data)
+			f.write("<hr><br>")
+			f.close()
+		else:
 
-		if host.store_headers() is True:
-			for key, value in host.get_headers().items():
-				f.write("<b>" + key + ": " + value + "</b><br>")
+			host_data = "<h2>Host: <a href=\"{0}\" target=\"_blank\">{1}</a></h1>".format(host.get_url(), host.get_url())
+			host_data += "<img src=\"{0}\" /><br>".format(host.get_ss_filename())
+			f = open(self._report_dir + "/report.html", 'a')
+			f.write(host_data)
 
-		f.write("<hr><br>")
+			if host.store_headers() is True:
+				for key, value in host.get_headers().items():
+					f.write("<b>" + key + ": " + value + "</b><br>")
+
+			f.write("<hr><br>")
 		f.close()
 
 	def finish(self):
@@ -234,7 +252,7 @@ def process_hosts(data, args):
 			for c in [':', '/', '.']:
 				image_file = image_file.replace(c, '_')
 
-			output_file = args['-o'] + "/screenshots/" + image_file + "_" + str(int(time.time())) + ".png"
+			output_file = "screenshots/" + image_file + "_" + str(int(time.time())) + ".png"
 			host = Host(store_headers=args['--headers'],
 						follow_redirects=args['--follow-redirects'])
 			host.set_url(u)
@@ -248,18 +266,19 @@ def process_hosts(data, args):
 	return hosts
 
 
-def take_screenshot(h, b):
+def take_screenshot(h, b, args):
 	print("\033[0;32m[+]\033[0m Taking screenshot for URL: {0}".format(h.get_url()))
 	if host.check_host():
 		try:
 			b.get_url(h.get_url())
-			b.save_image(h.get_ss_filename())
+			b.save_image(args['-o'] + "/" + h.get_ss_filename())
 
 		except:
 			# There was an error
 			print("\033[0;31m[!]\033[0m Error taking screenshot for host{0}, skipping.".format(h.get_url()))
+			host.error = True
 	else:
-		print("\033[0;31m[!]\033[0m Error taking screenshot for host: {0}, pre-flight check failed!".format(h.get_url()))
+		host.error = True
 
 
 if __name__ == '__main__':
@@ -288,7 +307,7 @@ if __name__ == '__main__':
 
 	browser = Browser(size=args['--size'])
 	for host in hosts:
-		take_screenshot(host, browser)
+		take_screenshot(host, browser, args)
 	browser.close()
 
 	for host in hosts:
