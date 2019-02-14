@@ -60,5 +60,9 @@ Output
 ------
 Jast writes an HTML report in the specified output folder containing a 
 *report.html* file and some associated style documents. All screenshots are
-saved in the */screenshots/* subfolder.
+saved in the */screenshots/* subfolder. The image below shows an example report
+that is created when scanning a single host using Jast and including the 
+`--headers` flag:
+
+![Example Report](jast-report-sample.png?raw=true)
 
