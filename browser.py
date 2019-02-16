@@ -2,6 +2,7 @@
 from selenium.webdriver import Firefox
 from selenium.webdriver.firefox.options import Options
 
+from alert import ALERT, SUCCESS
 
 class Browser:
 	def __init__(self, size="800x600"):
@@ -9,7 +10,7 @@ class Browser:
 			self._width, self._height = size.split('x')
 
 		except:
-			print("\033[0;31m[!]\033[0m Error parsing browser window size, defaulting to 800x600")
+			print(AKERT + "Error parsing browser window size, defaulting to 800x600")
 			self._width = 800
 			self._height = 600
 

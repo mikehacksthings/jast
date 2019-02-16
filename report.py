@@ -2,6 +2,8 @@
 import os
 import sys
 
+from alert import ALERT
+
 class Report:
 	def __init__(self, args={}):
 		self._args = args
@@ -40,16 +42,14 @@ class Report:
 
 	def create_report_dir(self):
 		if os.path.isdir(self._report_dir) and os.path.exists(self._report_dir):
-			print("\033[0;31m[!]\033[0m Failed to create directory {0}. Directory already exists! Exiting.".format(self._report_dir))
-			sys.exit(-1)
+			pass
 		else:
 			try:
 				os.mkdir(self._report_dir)
 				os.mkdir(self._report_dir + "/screenshots")
 				return
 			except OSError:
-				print("\033[0;31m[!]\033[0m Failed to create {0}.".format(self._report_dir))
-
+				print(ALERT + "Failed to create {0}.".format(self._report_dir))
 				sys.exit(-1)
 
 	def start(self):

@@ -36,14 +36,14 @@ from docopt import docopt
 from host import Host
 from browser import Browser
 from report import Report
-
+from alert import ALERT, SUCCESS
 
 def process_hosts(data, args):
 	hosts = []
 	for item in data:
 		u = item.rstrip('\n')
 		if 'http' not in u:
-			print("\033[0;31m[!]\033[0m No protocol supplied for host: {0}. Use format http(s)://<host> Skipping...".format(u))
+			print(ALERT + "No protocol supplied for host: {0}. Use format http(s)://<host> Skipping...".format(u))
 			continue
 		try:
 			image_file = u.split('//')[1]
@@ -58,14 +58,14 @@ def process_hosts(data, args):
 			hosts.append(host)
 
 		except IndexError:  # URL doesn't begin with a protocol
-			print("\033[0;31m[!]\033[0m No protocol supplied for host: {0}. Use format http(s)://<host> Skipping...".format(u))
+			print(ALERT + "No protocol supplied for host: {0}. Use format http(s)://<host> Skipping...".format(u))
 			continue
 
 	return hosts
 
 
 def take_screenshot(h, b, args):
-	print("\033[0;32m[+]\033[0m Taking screenshot for URL: {0}".format(h.get_url()))
+	print(SUCCESS + "Taking screenshot for URL: {0}".format(h.get_url()))
 	if host.check_host():
 		try:
 			b.get_url(h.get_url())
@@ -73,7 +73,7 @@ def take_screenshot(h, b, args):
 
 		except:
 			# There was an error
-			print("\033[0;31m[!]\033[0m Error taking screenshot for host{0}, skipping.".format(h.get_url()))
+			print(ALERT + "Error taking screenshot for host{0}, skipping.".format(h.get_url()))
 			host.error = True
 	else:
 		host.error = True
@@ -84,15 +84,26 @@ if __name__ == '__main__':
 
 	data = []
 	hosts = []
+	overwrite = 'y'
 
-	print("\033[0;32m[+]\033[0m Processing host(s)...")
+	# check for output dir and prompt for overwrite if it already exists
+	if os.path.exists(args['-o']):
+		overwrite = input(ALERT + "Output directory exists (" + args['-o'] + "), overwrite? (Y/n): ")
+		if 'n' in overwrite.lower():
+			print(ALERT + "Directory not being overwritten, exiting.")
+			sys.exit(-1)
+		elif 'y' not in overwrite.lower():
+			print(ALERT + "Unknown response, exiting.")
+			sys.exit(-1)
+
+	print(SUCCESS + "Processing host(s)...")
 	if args['-f']:
 		if os.path.exists(args['-f']) and os.path.isfile(args['-f']):
 			f = open(args['-f'], 'r')
 			data = f.readlines()
 			f.close()
 		else: # File doesn't exist
-			print("\033[0;31m[!]\033[0m Host file not found! Exiting.")
+			print(ALERT + "Host file not found! Exiting.")
 			sys.exit(-1)
 
 	elif args['-u']:
@@ -101,7 +112,7 @@ if __name__ == '__main__':
 	hosts = process_hosts(data, args)
 
 	if len(hosts) == 0:
-		print("\033[0;31m[!]\033[0m No hosts processed, exiting...")
+		print(ALERT + "No hosts processed, exiting...")
 		sys.exit(-1)
 
 	report = Report(args)
@@ -117,5 +128,5 @@ if __name__ == '__main__':
 		report.write_host(host)
 	report.finish()
 
-	print("\033[0;32m[+]\033[0m Complete.")
-	print("\033[0;32m[+]\033[0m Report written to {0}/report.html".format(args['-o']))
+	print(SUCCESS + "Complete.")
+	print(SUCCESS + "Report written to {0}/report.html".format(args['-o']))

@@ -3,6 +3,7 @@ import requests
 import hashlib
 import urllib3
 
+from alert import ALERT, SUCCESS
 
 class Host:
 	def __init__(self, url='', status_code=0, ss_file='', content_hash='', follow_redirects=False, store_headers=False):
@@ -78,15 +79,15 @@ class Host:
 
 				return True
 			else:
-				print("\033[0;31m[!]\033[0m Bad HTTP response code from host: {0}. Skipping.".format(str(request.status_code)))
+				print(ALERT + "Bad HTTP response code from host: {0}. Skipping.".format(str(request.status_code)))
 				return False
 
 		except (requests.ConnectionError, requests.HTTPError) as error:
-			print("\033[0;31m[!]\033[0m Error taking screenshot for host. See report for details. Skipping.")
+			print(ALERT + "Error taking screenshot for host. See report for details. Skipping.")
 			self.error_msg = error
 			return False
 
 		except (urllib3.exceptions.ReadTimeoutError, requests.exceptions.ReadTimeout) as error:
-			print("\033[0;31m[!]\033[0m Timeout taking screenshot for host. See report for details. Skipping.")
+			print(ALERT + "Timeout taking screenshot for host. See report for details. Skipping.")
 			self.error_msg = error
 			return False
