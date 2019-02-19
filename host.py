@@ -55,18 +55,12 @@ class Host:
 	def check_host(self):
 		try:
 			urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-			request = requests.get(self._url,
-								   allow_redirects=False,
-								   verify=False,
-								   timeout=10)
+			request = requests.get(self._url, allow_redirects=False, verify=False, timeout=10)
 			self.set_status_code(request.status_code)
 
 			if (request.status_code == 302 or request.status_code == 301) and self._follow_redirects:
 				self.set_url(request.headers['Location'])
-				request = requests.get(self._url,
-									   allow_redirects=True,
-									   verify=False,
-									   timeout=10)
+				request = requests.get(self._url, allow_redirects=True, verify=False, timeout=10)
 
 			if request.raise_for_status() is None:
 				try:

@@ -2,7 +2,7 @@
 # Name: JAST - Just Another Screenshot Tool
 # Description: JAST is a tool to capture web server screenshots
 #   and server information using headless Firefox/Selenium.
-# Version: 0.3.0
+# Version: 0.3.1
 # Author: Mike Lisi (mike@mikehacksthings.com)
 
 """
@@ -51,14 +51,13 @@ def process_hosts(data, args):
 				image_file = image_file.replace(c, '_')
 
 			output_file = "screenshots/" + image_file + "_" + str(int(time.time())) + ".png"
-			host = Host(store_headers=args['--headers'],
-						follow_redirects=args['--follow-redirects'])
+			host = Host(store_headers=args['--headers'], follow_redirects=args['--follow-redirects'])
 			host.set_url(u)
 			host.set_ss_filename(output_file)
 			hosts.append(host)
 
 		except IndexError:  # URL doesn't begin with a protocol
-			print(ALERT + "No protocol supplied for host: {0}. Use format http(s)://<host> Skipping...".format(u))
+			print(ALERT + "No protocol supplied for host: {0}. Use format http(s)://<host>. Skipping...".format(u))
 			continue
 
 	return hosts
@@ -72,23 +71,22 @@ def take_screenshot(h, b, args):
 			b.save_image(args['-o'] + "/" + h.get_ss_filename())
 
 		except:
-			# There was an error
-			print(ALERT + "Error taking screenshot for host{0}, skipping.".format(h.get_url()))
+			print(ALERT + "Error taking screenshot for host: {0}. Skipping.".format(h.get_url()))
 			host.error = True
 	else:
 		host.error = True
 
 
 if __name__ == '__main__':
-	args = docopt(__doc__, version='JAST - Just Another Screenshot Tool v0.3.0')
+	args = docopt(__doc__, version='JAST - Just Another Screenshot Tool v0.3.1')
 
 	data = []
 	hosts = []
-	overwrite = 'y'
 
-	# check for output dir and prompt for overwrite if it already exists
+	# Check for output dir and prompt for overwrite if it already exists
 	if os.path.exists(args['-o']):
-		overwrite = input(ALERT + "Output directory exists (" + args['-o'] + "), overwrite? (Y/n): ")
+		overwrite = input(ALERT + "Output directory exists (" + args['-o'] + "), overwrite? (Y/n): ") or 'y'
+
 		if 'n' in overwrite.lower():
 			print(ALERT + "Directory not being overwritten, exiting.")
 			sys.exit(-1)
@@ -96,6 +94,7 @@ if __name__ == '__main__':
 			print(ALERT + "Unknown response, exiting.")
 			sys.exit(-1)
 
+	# Parse host file/host
 	print(SUCCESS + "Processing host(s)...")
 	if args['-f']:
 		if os.path.exists(args['-f']) and os.path.isfile(args['-f']):

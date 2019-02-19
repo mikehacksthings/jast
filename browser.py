@@ -10,11 +10,11 @@ class Browser:
 			self._width, self._height = size.split('x')
 
 		except:
-			print(AKERT + "Error parsing browser window size, defaulting to 800x600")
+			print(ALERT + "Error parsing browser window size, defaulting to 800x600")
 			self._width = 800
 			self._height = 600
 
-		self._browser = self.start_browser(self, self._width, self._height)
+		self._browser = self.start_browser(self._width, self._height)
 
 	def get_url(self, url):
 		self._browser.get(url)
@@ -24,11 +24,10 @@ class Browser:
 
 
 	@staticmethod
-	def start_browser(self, width, height):
+	def start_browser(width, height):
 		options = Options()
 		options.add_argument('--headless')
-		b = Firefox(executable_path='geckodriver',
-					options=options)
+		b = Firefox(executable_path='geckodriver', options=options)
 		b.set_window_size(width, height)
 		return b
 
