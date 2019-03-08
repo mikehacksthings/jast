@@ -3,13 +3,13 @@ import requests
 import hashlib
 import urllib3
 
-from alert import ALERT, SUCCESS
+from alert import SUCCESS, FAIL
 
 class Host:
 	def __init__(self, url='', status_code=0, ss_file='', content_hash='', follow_redirects=False, store_headers=False):
 		self._url = url
 		self._status_code = status_code
-		self._ss_file = ss_file
+		self._b64image = ''
 		self._content_hash = content_hash
 		self._follow_redirects = follow_redirects
 		self._store_headers = store_headers
@@ -29,12 +29,6 @@ class Host:
 	def get_status_code(self):
 		return self._status_code
 
-	def set_ss_filename(self, file):
-		self._ss_file = file
-
-	def get_ss_filename(self):
-		return self._ss_file
-
 	def set_hash(self, content):
 		m = hashlib.sha256()
 		m.update(content.text.encode('utf-8'))
@@ -52,6 +46,12 @@ class Host:
 	def store_headers(self):
 		return self._store_headers
 
+	def set_image(self, image):
+		self._b64image = image
+
+	def get_image(self):
+		return self._b64image
+
 	def check_host(self):
 		try:
 			urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -62,7 +62,7 @@ class Host:
 				self.set_url(request.headers['Location'])
 				request = requests.get(self._url, allow_redirects=True, verify=False, timeout=10)
 
-			if request.raise_for_status() is None:
+			if request.raise_for_status() is None or request.status_code == 404:
 				try:
 					if self._store_headers:
 						self.add_header(request.headers)
@@ -73,15 +73,15 @@ class Host:
 
 				return True
 			else:
-				print(ALERT + "Bad HTTP response code from host: {0}. Skipping.".format(str(request.status_code)))
+				print(FAIL + "Bad HTTP response code from host: {0}. Skipping.".format(str(request.status_code)))
 				return False
 
 		except (requests.ConnectionError, requests.HTTPError) as error:
-			print(ALERT + "Error taking screenshot for host. See report for details. Skipping.")
+			print(FAIL + "Error taking screenshot for host. See report for details. Skipping.")
 			self.error_msg = error
 			return False
 
 		except (urllib3.exceptions.ReadTimeoutError, requests.exceptions.ReadTimeout) as error:
-			print(ALERT + "Timeout taking screenshot for host. See report for details. Skipping.")
+			print(FAIL + "Timeout taking screenshot for host. See report for details. Skipping.")
 			self.error_msg = error
 			return False

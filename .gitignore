@@ -106,3 +106,4 @@ venv.bak/
 # misc ignore
 .idea/
 .DS_Store
+geckodriver.log

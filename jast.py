@@ -2,7 +2,7 @@
 # Name: JAST - Just Another Screenshot Tool
 # Description: JAST is a tool to capture web server screenshots
 #   and server information using headless Firefox/Selenium.
-# Version: 0.3.1
+# Version: 0.4
 # Author: Mike Lisi (mike@mikehacksthings.com)
 
 """
@@ -30,34 +30,40 @@ Options:
 
 import os
 import sys
-import time
 from docopt import docopt
 
 from host import Host
 from browser import Browser
 from report import Report
-from alert import ALERT, SUCCESS
+from alert import SUCCESS, FAIL, WARN
+
+header = "\n\
+     ██╗ █████╗ ███████╗████████╗\n\
+     ██║██╔══██╗██╔════╝╚══██╔══╝\n\
+     ██║███████║███████╗   ██║   \n\
+██   ██║██╔══██║╚════██║   ██║   \n\
+╚█████╔╝██║  ██║███████║   ██║   \n\
+ ╚════╝ ╚═╝  ╚═╝╚══════╝   ╚═╝   \n\
+                                 \n\
+Just Another Screenshot Tool v 0.4\n\
+\n\
+Author: Mike Lisi (@MikeHacksThings)"
 
 def process_hosts(data, args):
 	hosts = []
 	for item in data:
 		u = item.rstrip('\n')
 		if 'http' not in u:
-			print(ALERT + "No protocol supplied for host: {0}. Use format http(s)://<host> Skipping...".format(u))
+			print(FAIL + "No protocol supplied for host: {0}. Use format http(s)://<host> Skipping...".format(u))
 			continue
 		try:
-			image_file = u.split('//')[1]
-			for c in [':', '/', '.']:
-				image_file = image_file.replace(c, '_')
-
-			output_file = "screenshots/" + image_file + "_" + str(int(time.time())) + ".png"
 			host = Host(store_headers=args['--headers'], follow_redirects=args['--follow-redirects'])
 			host.set_url(u)
-			host.set_ss_filename(output_file)
 			hosts.append(host)
+			print(SUCCESS + "Adding host to list: {0}".format(host.get_url()))
 
 		except IndexError:  # URL doesn't begin with a protocol
-			print(ALERT + "No protocol supplied for host: {0}. Use format http(s)://<host>. Skipping...".format(u))
+			print(FAIL + "No protocol supplied for host: {0}. Use format http(s)://<host>. Skipping...".format(u))
 			continue
 
 	return hosts
@@ -68,31 +74,37 @@ def take_screenshot(h, b, args):
 	if host.check_host():
 		try:
 			b.get_url(h.get_url())
-			b.save_image(args['-o'] + "/" + h.get_ss_filename())
+			host.set_image(b.get_image())
 
 		except:
-			print(ALERT + "Error taking screenshot for host: {0}. Skipping.".format(h.get_url()))
+			print(FAIL + "Error taking screenshot for host: {0}. Skipping.".format(h.get_url()))
 			host.error = True
 	else:
 		host.error = True
 
 
 if __name__ == '__main__':
-	args = docopt(__doc__, version='JAST - Just Another Screenshot Tool v0.3.1')
+	args = docopt(__doc__, version='JAST - Just Another Screenshot Tool v0.4')
 
 	data = []
 	hosts = []
+	size = "800x600"
 
-	# Check for output dir and prompt for overwrite if it already exists
-	if os.path.exists(args['-o']):
-		overwrite = input(ALERT + "Output directory exists (" + args['-o'] + "), overwrite? (Y/n): ") or 'y'
+	# Check for output file and prompt for overwrite if it already exists
+	if os.path.exists(args['-o'] and os.path.isfile(args['-o'])):
+		overwrite = input(WARN + "Output file exists (" + args['-o'] + ".html), overwrite? (Y/n): ") or 'y'
 
 		if 'n' in overwrite.lower():
-			print(ALERT + "Directory not being overwritten, exiting.")
+			print(FAIL + "Report not being overwritten, exiting.")
 			sys.exit(-1)
 		elif 'y' not in overwrite.lower():
-			print(ALERT + "Unknown response, exiting.")
+			print(FAIL + "Unknown response, exiting.")
 			sys.exit(-1)
+
+	try:
+		window_w, window_h = args['-s'].split('x')
+	except:
+		window_w, window_h = size.split('x')
 
 	# Parse host file/host
 	print(SUCCESS + "Processing host(s)...")
@@ -102,7 +114,7 @@ if __name__ == '__main__':
 			data = f.readlines()
 			f.close()
 		else: # File doesn't exist
-			print(ALERT + "Host file not found! Exiting.")
+			print(FAIL + "Host file not found! Exiting.")
 			sys.exit(-1)
 
 	elif args['-u']:
@@ -111,21 +123,24 @@ if __name__ == '__main__':
 	hosts = process_hosts(data, args)
 
 	if len(hosts) == 0:
-		print(ALERT + "No hosts processed, exiting...")
+		print(FAIL + "No hosts processed, exiting...")
 		sys.exit(-1)
 
-	report = Report(args)
-	report.create_report_dir()
+	print(SUCCESS + "All hosts processed.")
 
+	print(SUCCESS + "Starting browser.")
 	browser = Browser(size=args['--size'])
 	for host in hosts:
 		take_screenshot(host, browser, args)
+
+	print(SUCCESS + "Stopping browser.")
 	browser.close()
 
+	print(SUCCESS + "Creating report.")
+	report = Report(args)
 	report.start()
 	for host in hosts:
 		report.write_host(host)
 	report.finish()
 
-	print(SUCCESS + "Complete.")
 	print(SUCCESS + "Report written to {0}/report.html".format(args['-o']))

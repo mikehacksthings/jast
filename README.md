@@ -1,4 +1,4 @@
-JAST v 0.3.1
+JAST v 0.4
 ============
 Jast (Just Another Screenshot Tool) is a tool that can be used to automate the 
 process for screenshots of webhosts. Jast uses the Selenium webdriver and the
@@ -7,7 +7,7 @@ folder.
 
 Requirements
 ------------
-Jast requires Python>=3.7.1 in order to operate along with geckodriver>=0.23.0
+Jast requires Python>=3.4 in order to operate along with geckodriver>=0.23.0
 and Firefox>=64.0.2.
 
 Python-specific requirements can be found in the requirements.txt file.
