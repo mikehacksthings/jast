@@ -101,10 +101,7 @@ if __name__ == '__main__':
 			print(FAIL + "Unknown response, exiting.")
 			sys.exit(-1)
 
-	try:
-		window_w, window_h = args['-s'].split('x')
-	except:
-		window_w, window_h = size.split('x')
+	print(header)
 
 	# Parse host file/host
 	print(SUCCESS + "Processing host(s)...")
