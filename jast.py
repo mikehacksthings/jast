@@ -89,10 +89,11 @@ if __name__ == '__main__':
 	data = []
 	hosts = []
 	size = "800x600"
+	output_file = args['-o'] + '.html'
 
 	# Check for output file and prompt for overwrite if it already exists
-	if os.path.exists(args['-o'] and os.path.isfile(args['-o'])):
-		overwrite = input(WARN + "Output file exists (" + args['-o'] + ".html), overwrite? (Y/n): ") or 'y'
+	if os.path.exists(output_file) and os.path.isfile(output_file):
+		overwrite = input(WARN + "Output file exists (" + output_file), overwrite? (Y/n): ") or 'y'
 
 		if 'n' in overwrite.lower():
 			print(FAIL + "Report not being overwritten, exiting.")
@@ -140,4 +141,4 @@ if __name__ == '__main__':
 		report.write_host(host)
 	report.finish()
 
-	print(SUCCESS + "Report written to {0}/report.html".format(args['-o']))
+	print(SUCCESS + "Report written to {0}".format(output_file))
