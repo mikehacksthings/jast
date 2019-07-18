@@ -93,7 +93,7 @@ if __name__ == '__main__':
 
 	# Check for output file and prompt for overwrite if it already exists
 	if os.path.exists(output_file) and os.path.isfile(output_file):
-		overwrite = input(WARN + "Output file exists (" + output_file "), overwrite? (Y/n): ") or 'y'
+		overwrite = input(WARN + "Output file exists (" + output_file + "), overwrite? (Y/n): ") or 'y'
 
 		if 'n' in overwrite.lower():
 			print(FAIL + "Report not being overwritten, exiting.")
